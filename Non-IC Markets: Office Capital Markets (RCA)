@@ -1,0 +1,189 @@
+---
+title: "Non-IC Markets: Office Capital Markets (RCA)"
+output:
+  flexdashboard::flex_dashboard:
+    social: menu
+    source_code: embed
+resource_files:
+- nic_rca_data.csv
+---
+
+```{r, echo=FALSE, include=FALSE}
+# CHUNK 1
+
+# Loading formattable to access the percent() function used in the matrix below 
+library(formattable)
+# Loading ggplot2 in case data visualization output would be needed in the future
+library(ggplot2)
+# Loading dplyr into workspace
+library(dplyr)
+#Loading DataTables library
+library(DT)
+#Loading library readr
+library(readr)
+#Loading library knitr
+library(knitr)
+#Loading library kableextra
+library(kableExtra)
+#Loading library magick
+library(magick)
+#Loading library flexdashboard 
+library(flexdashboard)
+
+nic_rca_data <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\RCA_nonIC_cities\\nic_rca_data.csv", na = "0")  #Note 4
+
+dat1 <- data.frame(nic_rca_data, na.rm=TRUE) #Note 5
+
+```
+
+
+Dashboard
+=====================================
+
+### NON-IC Cities Office Capital Markets {data-width=650} 
+
+
+```{r, echo=FALSE}
+# CHUNK 2
+
+# Code to get peak price per square foot
+y <- nrow(dat1)  # y is the row index for the row for the most recent quarter
+
+nic_mrq_psf <- c(dat1$balt.psf[y], dat1$char.psf[y], dat1$chic.psf[y], dat1$cin.psf[y], dat1$clev.psf[y], dat1$col.psf[y], dat1$det.psf[y], dat1$ind.psf[y], dat1$riv.psf[y], dat1$jack.psf[y], dat1$kan.psf[y], dat1$lv.psf[y], dat1$miami.psf[y], dat1$minn.psf[y], dat1$okl.psf[y], dat1$orange.psf[y], dat1$orl.psf[y], dat1$phil.psf[y], dat1$phoe.psf[y], dat1$rich.psf[y], dat1$sacra.psf[y], dat1$santonio.psf[y], dat1$stls.psf[y], dat1$stam.psf[y], dat1$tampa.psf[y], dat1$palm.psf[y]) 
+
+nic_peak_psf <- c(max(dat1$balt.psf, na.rm=TRUE), max(dat1$char.psf, na.rm=TRUE), max(dat1$chic.psf, na.rm=TRUE), max(dat1$cin.psf, na.rm=TRUE), max(dat1$clev.psf, na.rm=TRUE), max(dat1$col.psf, na.rm=TRUE), max(dat1$det.psf, na.rm=TRUE), max(dat1$ind.psf, na.rm=TRUE), max(dat1$riv.psf, na.rm=TRUE), max(dat1$jack.psf, na.rm=TRUE), max(dat1$kan.psf, na.rm=TRUE), max(dat1$lv.psf, na.rm=TRUE), max(dat1$miami.psf, na.rm=TRUE), max(dat1$minn.psf, na.rm=TRUE), max(dat1$okl.psf, na.rm=TRUE), max(dat1$orange.psf, na.rm=TRUE), max(dat1$orl.psf, na.rm=TRUE), max(dat1$phil.psf, na.rm=TRUE), max(dat1$phoe.psf, na.rm=TRUE), max(dat1$rich.psf, na.rm=TRUE), max(dat1$sacra.psf, na.rm=TRUE), max(dat1$santonio.psf, na.rm=TRUE), max(dat1$stls.psf, na.rm=TRUE), max(dat1$stam.psf, na.rm=TRUE), max(dat1$tampa.psf, na.rm=TRUE), max(dat1$palm.psf, na.rm=TRUE))
+
+```
+
+
+```{r, echo=FALSE}
+
+# CHUNK 3
+
+# Code to get sales volumes for Q(v), Q(v-4), Q(v-8)
+
+v <- nrow(dat1)
+
+nic_strip_data_svol <- function(a) {
+  
+    y <- c(dat1$balt.vol[a], dat1$char.vol[a], dat1$chic.vol[a], dat1$cin.vol[a], dat1$clev.vol[a], dat1$col.vol[a], dat1$det.vol[a], dat1$ind.vol[a], dat1$riv.vol[a], dat1$jack.vol[a], dat1$kan.vol[a], dat1$lv.vol[a], dat1$miami.vol[a], dat1$minn.vol[a], dat1$okl.vol[a], dat1$orange.vol[a], dat1$orl.vol[a], dat1$phil.vol[a], dat1$phoe.vol[a], dat1$rich.vol[a], dat1$sacra.vol[a], dat1$santonio.vol[a], dat1$stls.vol[a], dat1$stam.vol[a], dat1$tampa.vol[a], dat1$palm.vol[a])
+    return (y)
+  }
+
+nic_mrq <- nic_strip_data_svol(v) /1000000       # we start with the latest quarter
+nic_mrq_less_1 <- nic_strip_data_svol(v-4) /1000000     # we get sales volume for 1 year from MRQ
+nic_mrq_less_2 <- nic_strip_data_svol(v-8) /1000000     # we get sales volume for 2 years from MRQ
+nic_mrq_less_3 <- nic_strip_data_svol(v-12) / 1000000   # we get sales volume for 3 years from MRQ
+nic_mrq_less_5 <- nic_strip_data_svol(v-20) / 1000000   # we get sales volume for 5 years from MRQ
+
+# Code for 1 year growth
+
+nic_one_year_growth_svol <- (nic_mrq - nic_mrq_less_1) / nic_mrq_less_1
+
+# Code for 3 years CAGR
+
+nic_three_year_cagr_svol <- ((nic_mrq / nic_mrq_less_3)^(1/3)) - 1
+
+# Code for 5 years CAGR
+
+nic_five_year_cagr_svol <-  ((nic_mrq / nic_mrq_less_5)^(1/5)) - 1
+
+# Code for YTD Volume as a % of previous year
+
+nic_yoy_percent_mrq_svol <- nic_mrq / nic_mrq_less_1  
+
+
+```
+
+
+
+```{r, echo=FALSE}
+# CHUNK 4
+
+# Code to get capitalization rates averages 
+# Use simple mean arithmetic of (Q1 + Q2 + Q3 + Q4)/4 ~ Figures may therefore vary slightly from yearly cap rates averages available from RCA downloadable report which computes the annual avg cap rates on a daily continuous basis
+
+nic_strip_data_cr <- function(a, b) {
+  
+      w <- c(mean(dat1$balt.cr[a: b], na.rm=TRUE), mean(dat1$char.cr[a:b], na.rm=TRUE), mean(dat1$chic.cr[a:b], na.rm=TRUE), mean(dat1$cin.cr[a:b], na.rm=TRUE), mean(dat1$clev.cr[a:b], na.rm=TRUE), mean(dat1$col.cr[a:b], na.rm=TRUE), mean(dat1$det.cr[a:b], na.rm=TRUE), mean(dat1$ind.cr[a:b], na.rm=TRUE), mean(dat1$riv.cr[a:b], na.rm=TRUE), mean(dat1$jack.cr[a:b], na.rm=TRUE), mean(dat1$kan.cr[a:b], na.rm=TRUE), mean(dat1$lv.cr[a:b], na.rm=TRUE), mean(dat1$miami.cr[a:b], na.rm=TRUE), mean(dat1$minn.cr[a:b], na.rm=TRUE), mean(dat1$okl.cr[a:b], na.rm=TRUE), mean(dat1$orange.cr[a:b], na.rm=TRUE), mean(dat1$orl.cr[a:b], na.rm=TRUE), mean(dat1$phil.cr[a:b], na.rm=TRUE), mean(dat1$phoe.cr[a:b], na.rm=TRUE), mean(dat1$rich.cr[a:b], na.rm=TRUE), mean(dat1$sacra.cr[a:b], na.rm=TRUE), mean(dat1$santonio.cr[a:b], na.rm=TRUE), mean(dat1$stls.cr[a:b], na.rm=TRUE), mean(dat1$stam.cr[a:b], na.rm=TRUE), mean(dat1$tampa.cr[a:b], na.rm=TRUE), mean(dat1$palm.cr[a:b], na.rm=TRUE))
+    return (w)
+  }
+
+nic_cr_avg_mrq <- nic_strip_data_cr(v, v)
+nic_cr_avg_mrq_less_1 <- nic_strip_data_cr(v-4, v-1)
+nic_cr_avg_mrq_less_2 <- nic_strip_data_cr(v-8, v-5)
+nic_cr_avg_mrq_less_3 <- nic_strip_data_cr(v-12, v-9)
+nic_cr_avg_mrq_less_5 <- nic_strip_data_cr(v-20, v-17)
+
+# Code to compute 1 year growth of CR
+
+nic_one_year_growth_cr <- (nic_cr_avg_mrq - nic_cr_avg_mrq_less_1) / (nic_cr_avg_mrq_less_1)
+
+# Code to compute 3 year CAGR
+
+nic_three_year_cagr_cr <- ((nic_cr_avg_mrq / nic_cr_avg_mrq_less_3)^(1/3)) - 1
+
+# Code to compute 5 year CAGR
+
+nic_five_year_cagr_cr <- ((nic_cr_avg_mrq / nic_cr_avg_mrq_less_5)^(1/5)) - 1
+
+# YOY % MRQ
+
+nic_yoy_percent_mrq_cr <- nic_cr_avg_mrq / nic_cr_avg_mrq_less_1
+
+```
+
+
+```{r, echo=FALSE}
+# CHUNK 5
+
+# Finding quarters for which market pricing per sf peaked
+
+nic_date_peak_market1 <- c(which.max(dat1$balt.psf), which.max(dat1$char.psf), which.max(dat1$chic.psf), which.max(dat1$cin.psf), which.max(dat1$clev.psf), which.max(dat1$col.psf), which.max(dat1$det.psf), which.max(dat1$ind.psf), which.max(dat1$riv.psf), which.max(dat1$jack.psf), which.max(dat1$kan.psf), which.max(dat1$lv.psf), which.max(dat1$miami.psf), which.max(dat1$minn.psf), which.max(dat1$okl.psf), which.max(dat1$orange.psf), which.max(dat1$orl.psf), which.max(dat1$phil.psf), which.max(dat1$phoe.psf), which.max(dat1$rich.psf), which.max(dat1$sacra.psf), which.max(dat1$santonio.psf), which.max(dat1$stls.psf), which.max(dat1$stam.psf), which.max(dat1$tampa.psf), which.max(dat1$palm.psf))
+
+nic_date_peak_market <- dat1$X1[nic_date_peak_market1] # Note 6
+
+```
+
+
+```{r, echo=FALSE}
+
+# CHUNK 7 Bringing it all together
+
+# Code for compiling the table for each individual market/non-IC city. 'markets' is a vector of cities names that I include as a vector but it eventually only acts as the row names for the data. The table therefore has 15 columns counting the Markets column. nic_markets_1 is the final vector!
+
+nic_markets <- c("Baltimore", "Charlotte", "Chicago", "Cincinnati", "Cleveland", "Columbus", "Detroit", "Indianapolis", "Riverside", "Jacksonville", "Kansas city", "Las Vegas", "Miami", "Minneapolis", "Oklahoma city", "Orange county", "Orlando", "Philadelphia", "Phoenix", "Richmond", "Sacramento", "San Antonio", "St. Louis", "Stamford", "Tampa", "Palm Beach")
+
+nic_markets_1 <- data.frame(nic_markets, currency(nic_mrq), percent(nic_yoy_percent_mrq_svol), currency(nic_mrq_less_1), percent(nic_one_year_growth_svol), percent(nic_three_year_cagr_svol), percent(nic_five_year_cagr_svol), percent(nic_cr_avg_mrq), percent(nic_yoy_percent_mrq_cr), percent(nic_cr_avg_mrq_less_1), percent(nic_one_year_growth_cr), percent(nic_three_year_cagr_cr), percent(nic_five_year_cagr_cr), currency(nic_mrq_psf), currency(nic_peak_psf), nic_date_peak_market)
+
+colnames(nic_markets_1) <- c("Markets", "18Q2 MRQ (Ms) SV", "18Q2 as a % of 17Q2 SV", "17Q2 (Ms) SV", "1 Year Growth SV", "3 Year CAGR SV", "5 Year CAGR SV", "18Q2 MRQ CR", "18Q2 as a % of 17Q2 CR", "17Q2 CR", "1 year Growth CR", "3 Year CAGR CR", "5 year CAGR CR", "MRQ Pricing", "Peak Pricing/sf", "Date of Market peak") # Note 7
+
+# Code for constructing/formatting the first table. Feel free to modify the footnote comments, the colors in color_tile() functions, and even the titles using the caption = ... inside kable() function.
+
+library(formattable)
+
+nic_markets_1 %>%
+  mutate(
+  "18Q2 MRQ CR" = color_tile("white", "lightpink")(percent(nic_cr_avg_mrq)),
+  "17Q2 CR" = color_tile("white", "lightpink")(percent(nic_cr_avg_mrq_less_1)),
+  "18Q2 as a % of 17Q2 SV" = color_tile("white", "lightblue")(percent(nic_yoy_percent_mrq_svol)),
+  "18Q2 as a % of 17Q2 CR" = color_tile("white", "lightblue")(percent(nic_yoy_percent_mrq_cr)),
+  "3 Year CAGR SV" = color_tile("white", "yellow")(percent(nic_three_year_cagr_svol)),
+  "5 Year CAGR SV" = color_tile("white", "yellow")(percent(nic_five_year_cagr_svol))
+) %>%
+  select("Markets", everything()) %>%
+  kable("html", escape=F, caption="Non-IC Cities- Office Capital Markets") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))  %>%
+   kable_styling("hover", full_width = F) %>%
+   column_spec(8, width = "3cm") %>%
+   column_spec(7, border_right = T) %>%
+   column_spec(13, border_right = T) %>%
+   column_spec(1, bold = T, border_right = T, color="white", background="grey") %>%
+   row_spec(0, color="black", background="lightblue") %>%
+   add_header_above(c(" " = 1, "SALES VOLUME" = 6, "CAPITALIZATION RATES" = 6, "Market Pricing" = 3)) %>%
+   footnote(symbol = "Data Source: Real Capital Analytics",
+            number = c("SV: Sales Volume", "CR: Capitalization Rates", "MRQ: Most Recent Quarter", "NaN: Data not available"))
+
+
+
+```
