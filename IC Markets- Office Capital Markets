@@ -1,0 +1,295 @@
+---
+title: "IC Markets- Office Capital Markets"
+output:
+  flexdashboard::flex_dashboard:
+    social: menu
+    source_code: embed
+---
+
+
+```{r, echo=FALSE, include=FALSE}
+# CHUNK 1
+
+# Loading formattable to access the percent() function used in the matrix below 
+library(formattable)
+# Loading ggplot2 in case data visualization output would be needed in the future
+library(ggplot2)
+# Loading dplyr into workspace
+library(dplyr)
+#Loading DataTables library
+library(DT)
+#Loading library readr
+library(readr)
+#Loading library knitr
+library(knitr)
+#Loading library kableextra
+library(kableExtra)
+#Loading library magick
+library(magick)
+#Loading library flexdashboard 
+library(flexdashboard)
+
+dashboard_qtr_data_2 <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\RCA_IC_Cities\\dashboard_qtr_data_2.csv", na = "0")  
+#Note 4
+
+dat_1 <- data.frame(dashboard_qtr_data_2, na.rm=TRUE) #Note 5
+
+```
+
+Dashboard
+=====================================
+
+### IC Cities Office Capital Markets {data-width=650}
+
+
+```{r, echo=FALSE}
+# CHUNK 2
+
+# Code to get peak price per square foot
+y <- nrow(dat_1)  # y is the row index for the row for the most recent quarter
+
+mrq_psf <- c(dat_1$nyc.psf[y], dat_1$sf.psf[y], dat_1$dc.psf[y], dat_1$bos.psf[y], dat_1$sj.psf[y], dat_1$la.psf[y], dat_1$sd.psf[y], dat_1$sea.psf[y], dat_1$hous.psf[y], dat_1$aus.psf[y], dat_1$dall.psf[y], dat_1$port.psf[y], dat_1$rd.psf[y], dat_1$nash.psf[y], dat_1$den.psf[y], dat_1$slc.psf[y], dat_1$pitts.psf[y], dat_1$atl.psf[y])
+
+peak_psf <- c(max(dat_1$nyc.psf, na.rm=TRUE), max(dat_1$sf.psf, na.rm=TRUE), max(dat_1$dc.psf, na.rm=TRUE), max(dat_1$bos.psf, na.rm=TRUE), max(dat_1$sj.psf, na.rm=TRUE), max(dat_1$la.psf, na.rm=TRUE), max(dat_1$sd.psf, na.rm=TRUE), max(dat_1$sea.psf, na.rm=TRUE), max(dat_1$hous.psf, na.rm=TRUE), max(dat_1$aus.psf, na.rm=TRUE), max(dat_1$dall.psf, na.rm=TRUE), max(dat_1$port.psf, na.rm=TRUE), max(dat_1$rd.psf, na.rm=TRUE), max(dat_1$nash.psf, na.rm=TRUE), max(dat_1$den.psf, na.rm=TRUE), max(dat_1$slc.psf, na.rm=TRUE), max(dat_1$pitts.psf, na.rm=TRUE), max(dat_1$atl.psf, na.rm=TRUE))
+```
+
+
+```{r, echo=FALSE}
+
+# CHUNK 3
+
+# Code to get sales volumes for Q(x), Q(x-4), Q(x-8)
+
+x <- nrow(dat_1)
+
+strip_data_svol <- function(a) {
+  
+    y <- c(dat_1$nyc.vol[a], dat_1$sf.vol[a], dat_1$dc.vol[a], dat_1$bos.vol[a], dat_1$sj.vol[a], dat_1$la.vol[a], dat_1$sd.vol[a], dat_1$sea.vol[a], dat_1$hous.vol[a], dat_1$aus.vol[a], dat_1$dall.vol[a], dat_1$port.vol[a], dat_1$rd.vol[a], dat_1$nash.vol[a], dat_1$den.vol[a], dat_1$slc.vol[a], dat_1$pitts.vol[a], dat_1$atl.vol[a])
+    return (y)
+  }
+
+mrq <- strip_data_svol(x) /1000000       # we start with the latest quarter
+mrq_less_1 <- strip_data_svol(x-4) /1000000     # we get sales volume for 1 year from MRQ
+mrq_less_2 <- strip_data_svol(x-8) /1000000     # we get sales volume for 2 years from MRQ
+mrq_less_3 <- strip_data_svol(x-12) / 1000000   # we get sales volume for 3 years from MRQ
+mrq_less_5 <- strip_data_svol(x-20) / 1000000   # we get sales volume for 5 years from MRQ
+
+# Code for 1 year growth
+
+one_year_growth_svol <- (mrq - mrq_less_1) / mrq_less_1
+
+# Code for 3 years CAGR
+
+three_year_cagr_svol <- ((mrq / mrq_less_3)^(1/3)) - 1
+
+# Code for 5 years CAGR
+
+five_year_cagr_svol <-  ((mrq / mrq_less_5)^(1/5)) - 1
+
+# Code for YTD Volume as a % of previous year
+
+yoy_percent_mrq_svol <- mrq / mrq_less_1  
+
+
+```
+
+
+
+```{r, echo=FALSE}
+# CHUNK 4
+
+# Code to get capitalization rates averages 
+# Use simple mean arithmetic of (Q1 + Q2 + Q3 + Q4)/4 ~ Figures may therefore vary slightly from yearly cap rates averages available from RCA downloadable report which computes the annual avg cap rates on a daily continuous basis
+
+strip_data_cr <- function(a, b) {
+  
+      w <- c(mean(dat_1$nyc.cr[a:b], na.rm=TRUE), mean(dat_1$sf.cr[a:b], na.rm=TRUE), mean(dat_1$dc.cr[a:b], na.rm=TRUE), mean(dat_1$bos.cr[a:b], na.rm=TRUE), mean(dat_1$sj.cr[a:b], na.rm=TRUE), mean(dat_1$la.cr[a:b], na.rm=TRUE), mean(dat_1$sd.cr[a:b], na.rm=TRUE), mean(dat_1$sea.cr[a:b], na.rm=TRUE), mean(dat_1$hous.cr[a:b], na.rm=TRUE), mean(dat_1$aus.cr[a:b], na.rm=TRUE), mean(dat_1$dall.cr[a:b], na.rm=TRUE), mean(dat_1$port.cr[a:b], na.rm=TRUE), mean(dat_1$rd.cr[a:b], na.rm=TRUE), mean(dat_1$nash.cr[a:b], na.rm=TRUE), mean(dat_1$den.cr[a:b], na.rm=TRUE), mean(dat_1$slc.cr[a:b], na.rm=TRUE), mean(dat_1$pitts.cr[a:b], na.rm=TRUE), mean(dat_1$atl.cr[a:b],na.rm=TRUE))
+    return (w)
+  }
+
+cr_avg_mrq <- strip_data_cr(x, x)
+cr_avg_mrq_less_1 <- strip_data_cr(x-4, x-4)
+cr_avg_mrq_less_2 <- strip_data_cr(x-8, x-8)
+cr_avg_mrq_less_3 <- strip_data_cr(x-12, x-12)
+cr_avg_mrq_less_5 <- strip_data_cr(x-20, x-20)
+
+# Code to compute 1 year growth of CR
+
+one_year_growth_cr <- (cr_avg_mrq - cr_avg_mrq_less_1) / (cr_avg_mrq_less_1)
+
+# Code to compute 3 year CAGR
+
+three_year_cagr_cr <- ((cr_avg_mrq / cr_avg_mrq_less_3)^(1/3)) - 1
+
+# Code to compute 5 year CAGR
+
+five_year_cagr_cr <- ((cr_avg_mrq / cr_avg_mrq_less_5)^(1/5)) - 1
+
+# YOY % MRQ
+
+yoy_percent_mrq_cr <- cr_avg_mrq / cr_avg_mrq_less_1
+
+```
+
+
+```{r, echo=FALSE}
+# CHUNK 5
+
+# Finding quarters for which market pricing per sf peaked
+
+date_peak_market1 <- c(which.max(dat_1$nyc.psf), which.max(dat_1$sf.psf), which.max(dat_1$dc.psf), which.max(dat_1$bos.psf), which.max(dat_1$sj.psf), which.max(dat_1$la.psf), which.max(dat_1$sd.psf), which.max(dat_1$sea.psf), which.max(dat_1$hous.psf), which.max(dat_1$aus.psf), which.max(dat_1$dall.psf), which.max(dat_1$port.psf), which.max(dat_1$rd.psf), which.max(dat_1$nash.psf), which.max(dat_1$den.psf), which.max(dat_1$slc.psf), which.max(dat_1$pitts.psf), which.max(dat_1$atl.psf))
+
+date_peak_market <- dat_1$X1[date_peak_market1] # Note 6
+
+```
+
+
+
+```{r, echo=FALSE}
+#CHUNK 6
+
+# Code to compute the figures for the second table that averages Large, Medium, Small Markets
+
+# First convert the array of vectors in ic_markets into a matrix
+
+
+ic_table <- cbind(mrq, yoy_percent_mrq_svol, mrq_less_1, one_year_growth_svol, three_year_cagr_svol, five_year_cagr_svol, cr_avg_mrq, yoy_percent_mrq_cr, cr_avg_mrq_less_1, one_year_growth_cr, three_year_cagr_cr, five_year_cagr_cr, mrq_psf, peak_psf)
+
+ic_matrix <- matrix(ic_table, nrow=18, ncol=14)
+
+
+#Large IC Markets Calculations
+AVG_svol_mrq_L <- mean(c(ic_matrix[1:6, 1], ic_matrix[8, 1]), na.rm=TRUE)
+AVG_yoy_percent_mrq_svol_L <- mean(c(ic_matrix[1:6, 2], ic_matrix[8, 2]), na.rm=TRUE)
+AVG_mrq_less_1_L  <- mean(c(ic_matrix[1:6, 3], ic_matrix[8, 3]), na.rm=TRUE)
+AVG_one_year_growth_svol_L <- mean(c(ic_matrix[1:6, 4], ic_matrix[8, 4]), na.rm=TRUE)
+AVG_three_year_cagr_svol_L <- mean(c(ic_matrix[1:6, 5], ic_matrix[8, 5]), na.rm=TRUE)
+AVG_five_year_cagr_svol_L <- mean(c(ic_matrix[1:6, 6], ic_matrix[8, 6]), na.rm=TRUE)
+AVG_cr_avg_mrq_L <- mean(c(ic_matrix[1:6, 7], ic_matrix[8, 7]), na.rm=TRUE)
+AVG_yoy_percent_mrq_cr_L <- mean(c(ic_matrix[1:6, 8], ic_matrix[8, 8]), na.rm=TRUE)
+AVG_cr_avg_mrq_less_1_L <- mean(c(ic_matrix[1:6, 9], ic_matrix[8, 9]), na.rm=TRUE)
+AVG_one_year_growth_cr_L <- mean(c(ic_matrix[1:6, 10], ic_matrix[8, 10]), na.rm=TRUE)
+AVG_three_year_cagr_cr_L <- mean(c(ic_matrix[1:6, 11], ic_matrix[8, 11]), na.rm=TRUE)
+AVG_five_year_cagr_cr_L <- mean(c(ic_matrix[1:6, 12], ic_matrix[8, 12]), na.rm=TRUE)
+AVG_psf_mrq_L <- mean(c(ic_matrix[1:6, 13], ic_matrix[8, 13]), na.rm=TRUE)
+AVG_peak_psf_L <-  mean(c(ic_matrix[1:6, 14], ic_matrix[8, 14]), na.rm=TRUE)
+
+#Medium Markets
+AVG_svol_mrq_M <- mean(c(ic_matrix[7, 1], ic_matrix[9, 1], ic_matrix[11, 1], ic_matrix[15, 1], ic_matrix[18, 1]), na.rm=TRUE)
+AVG_yoy_percent_mrq_svol_M <- mean(c(ic_matrix[7, 2], ic_matrix[9, 2], ic_matrix[11, 2], ic_matrix[15, 2], ic_matrix[18, 2]), na.rm=TRUE)
+AVG_mrq_less_1_M <- mean(c(ic_matrix[7, 3], ic_matrix[9, 3], ic_matrix[11, 3], ic_matrix[15, 3], ic_matrix[18, 3]), na.rm=TRUE)
+AVG_one_year_growth_svol_M <- mean(c(ic_matrix[7, 4], ic_matrix[9, 4], ic_matrix[11, 4], ic_matrix[15, 4], ic_matrix[18, 4]), na.rm=TRUE)
+AVG_three_year_cagr_svol_M <- mean(c(ic_matrix[7, 5], ic_matrix[9, 5], ic_matrix[11, 5], ic_matrix[15, 5], ic_matrix[18, 5]), na.rm=TRUE)
+AVG_five_year_cagr_svol_M <- mean(c(ic_matrix[7, 6], ic_matrix[9, 6], ic_matrix[11, 6], ic_matrix[15, 6], ic_matrix[18, 6]), na.rm=TRUE)
+AVG_cr_avg_mrq_M <- mean(c(ic_matrix[7, 7], ic_matrix[9, 7], ic_matrix[11, 7], ic_matrix[15, 7], ic_matrix[18, 7]), na.rm=TRUE)
+AVG_yoy_percent_mrq_cr_M <- mean(c(ic_matrix[7, 8], ic_matrix[9, 8], ic_matrix[11, 8], ic_matrix[15, 8], ic_matrix[18, 8]), na.rm=TRUE)
+AVG_cr_avg_mrq_less_1_M <-  mean(c(ic_matrix[7, 9], ic_matrix[9, 9], ic_matrix[11, 9], ic_matrix[15, 9], ic_matrix[18, 9]), na.rm=TRUE)
+AVG_one_year_growth_cr_M <- mean(c(ic_matrix[7, 10], ic_matrix[9, 10], ic_matrix[11, 10], ic_matrix[15, 10], ic_matrix[18, 10]), na.rm=TRUE)
+AVG_three_year_cagr_cr_M <- mean(c(ic_matrix[7, 11], ic_matrix[9, 11], ic_matrix[11, 11], ic_matrix[15, 11], ic_matrix[18, 11]), na.rm=TRUE)
+AVG_five_year_cagr_cr_M <- mean(c(ic_matrix[7, 12], ic_matrix[9, 12], ic_matrix[11, 12], ic_matrix[15, 12], ic_matrix[18, 12]), na.rm=TRUE)
+AVG_psf_mrq_M <- mean(c(ic_matrix[7, 13], ic_matrix[9, 13], ic_matrix[11, 13], ic_matrix[15, 13], ic_matrix[18, 13]), na.rm=TRUE)
+AVG_peak_psf_M <- mean(c(ic_matrix[7, 14], ic_matrix[9, 14], ic_matrix[11, 14], ic_matrix[15, 14], ic_matrix[18, 14]), na.rm=TRUE)
+
+#Small Markets
+AVG_svol_mrq_S <- mean(c(ic_matrix[10, 1], (ic_matrix[12:14, 1]), (ic_matrix[16:17, 1])), na.rm=TRUE)
+AVG_yoy_percent_mrq_svol_S <- mean(c(ic_matrix[10, 2], ic_matrix[12:14, 2], ic_matrix[16:17, 2]), na.rm=TRUE)
+AVG_mrq_less_1_S <- mean(c(ic_matrix[10, 3], ic_matrix[12:14, 3], ic_matrix[16:17, 3]), na.rm=TRUE)
+AVG_one_year_growth_svol_S <- mean(c(ic_matrix[10, 4], ic_matrix[12:14, 4], ic_matrix[16:17, 4]), na.rm=TRUE)
+AVG_three_year_cagr_svol_S <- mean(c(ic_matrix[10, 5], ic_matrix[12:14, 5], ic_matrix[16:17, 5]), na.rm=TRUE)
+AVG_five_year_cagr_svol_S <- mean(c(ic_matrix[10, 6], ic_matrix[12:14, 6], ic_matrix[16:17, 6]), na.rm=TRUE)
+AVG_cr_avg_mrq_S <- mean(c(ic_matrix[10, 7], ic_matrix[12:14, 7], ic_matrix[16:17, 7]), na.rm=TRUE)
+AVG_yoy_percent_mrq_cr_S <- mean(c(ic_matrix[10, 8], ic_matrix[12:14, 8], ic_matrix[16:17, 8]), na.rm=TRUE)
+AVG_cr_avg_mrq_less_1_S <- mean(c(ic_matrix[10, 9], ic_matrix[12:14, 9], ic_matrix[16:17, 9]), na.rm=TRUE)
+AVG_one_year_growth_cr_S <- mean(c(ic_matrix[10, 10], ic_matrix[12:14, 10], ic_matrix[16:17, 10]), na.rm=TRUE)
+AVG_three_year_cagr_cr_S <- mean(c(ic_matrix[10, 11], ic_matrix[12:14, 11], ic_matrix[16:17, 11]), na.rm=TRUE)
+AVG_five_year_cagr_cr_S <- mean(c(ic_matrix[10, 12], ic_matrix[12:14, 12], ic_matrix[16:17, 12]), na.rm=TRUE)
+AVG_psf_mrq_S <- mean(c(ic_matrix[10, 13], ic_matrix[12:14, 13], ic_matrix[16:17, 13]), na.rm=TRUE)
+AVG_peak_psf_S <- mean(c(ic_matrix[10, 14], ic_matrix[12:14, 14], ic_matrix[16:17, 14]), na.rm=TRUE)
+
+#Combining Large, Medium, Small into single vectors 
+AVG_svol_mrq <- c(AVG_svol_mrq_L, AVG_svol_mrq_M, AVG_svol_mrq_S)
+AVG_yoy_percent_mrq_svol <- c(AVG_yoy_percent_mrq_svol_L, AVG_yoy_percent_mrq_svol_M, AVG_yoy_percent_mrq_svol_S)
+AVG_mrq_less_1 <- c(AVG_mrq_less_1_L, AVG_mrq_less_1_M, AVG_mrq_less_1_S)
+AVG_one_year_growth_svol <- c(AVG_one_year_growth_svol_L, AVG_one_year_growth_svol_M, AVG_one_year_growth_svol_S)
+AVG_three_year_cagr_svol <- c(AVG_three_year_cagr_svol_L, AVG_three_year_cagr_svol_M, AVG_three_year_cagr_svol_S)
+AVG_five_year_cagr_svol <- c(AVG_five_year_cagr_svol_L, AVG_five_year_cagr_svol_M, AVG_five_year_cagr_svol_S)
+AVG_cr_avg_mrq <- c(AVG_cr_avg_mrq_L, AVG_cr_avg_mrq_M, AVG_cr_avg_mrq_S)
+AVG_yoy_percent_mrq_cr <- c(AVG_yoy_percent_mrq_cr_L, AVG_yoy_percent_mrq_cr_M, AVG_yoy_percent_mrq_cr_S)
+AVG_cr_avg_mrq_less_1 <- c(AVG_cr_avg_mrq_less_1_L, AVG_cr_avg_mrq_less_1_M, AVG_cr_avg_mrq_less_1_S)
+AVG_one_year_growth_cr <- c(AVG_one_year_growth_cr_L, AVG_one_year_growth_cr_M, AVG_one_year_growth_cr_S)
+AVG_three_year_cagr_cr <- c(AVG_three_year_cagr_cr_L, AVG_three_year_cagr_cr_M, AVG_three_year_cagr_cr_S)
+AVG_five_year_cagr_cr <- c(AVG_five_year_cagr_cr_L, AVG_five_year_cagr_cr_M, AVG_five_year_cagr_cr_S)
+AVG_psf_mrq <- c(AVG_psf_mrq_L, AVG_psf_mrq_M, AVG_psf_mrq_S)
+AVG_peak_psf <- c(AVG_peak_psf_L, AVG_peak_psf_M, AVG_peak_psf_S)
+
+```
+
+
+```{r, echo=FALSE}
+
+# CHUNK 7 Bringing it all together
+
+#Code for compiling the table for each individual market (for the combined average figures for Large/Medium/Small IC markets, see next comment in this chunk). 'markets' is a vector of cities names that I include as a vector but it eventually only acts as the row names for the data. The table therefore has 16 columns counting the Markets column. ic_markets_1 is the final vector!
+
+markets <- c("NYC", "San Francisco", "DC", "Boston", "San Jose", "LA", "San Diego", "Seattle", "Houston", "Austin", "Dallas", "Portland", "Raleigh/Durham", "Nashville", "Denver", "Salt Lake City", "Pittsburgh", "Atlanta")
+
+ic_markets_1 <- data.frame(markets, currency(mrq), percent(yoy_percent_mrq_svol), currency(mrq_less_1), percent(one_year_growth_svol), percent(three_year_cagr_svol), percent(five_year_cagr_svol), percent(cr_avg_mrq), percent(yoy_percent_mrq_cr), percent(cr_avg_mrq_less_1), percent(one_year_growth_cr), percent(three_year_cagr_cr), percent(five_year_cagr_cr), currency(mrq_psf), currency(peak_psf), date_peak_market)
+
+colnames(ic_markets_1) <- c("Markets", "18Q2 MRQ (Ms) SV", "18Q2 as a % of 17Q2 SV", "17Q2 (Ms) SV", "1 Year Growth SV", "3 Year CAGR SV", "5 Year CAGR SV", "18Q2 MRQ CR", "18Q2 as a % of 17Q2 CR", "17Q2 CR", "1 year Growth CR", "3 Year CAGR CR", "5 year CAGR CR", "MRQ Pricing", "Peak Pricing/sf", "Date of Market peak") # Note 7
+
+# Code for constructing/formatting the first table. Feel free to modify the footnote comments, the colors in color_tile() functions, and even the titles using the caption = ... inside kable() function.
+
+library(formattable)
+
+ic_markets_1 %>%
+  mutate(
+  "18Q2 MRQ CR" = color_tile("white", "lightpink")(percent(cr_avg_mrq)),
+  "17Q2 CR" = color_tile("white", "lightpink")(percent(cr_avg_mrq_less_1)),
+  "18Q2 as a % of 17Q2 SV" = color_tile("white", "lightblue")(percent(yoy_percent_mrq_svol)),
+  "18Q2 as a % of 17Q2 CR" = color_tile("white", "lightblue")(percent(yoy_percent_mrq_cr)),
+  "3 Year CAGR SV" = color_tile("white", "yellow")(percent(three_year_cagr_svol)),
+  "5 Year CAGR SV" = color_tile("white", "yellow")(percent(five_year_cagr_svol))
+) %>%
+  select("Markets", everything()) %>%
+  kable("html", escape=F, caption="IC Markets- Office Capital Markets") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))  %>%
+   kable_styling("hover", full_width = F) %>%
+   column_spec(8, width = "3cm") %>%
+   column_spec(7, border_right = T) %>%
+   column_spec(13, border_right = T) %>%
+   column_spec(1, bold = T, border_right = T, color="white", background="grey") %>%
+   row_spec(0, color="black", background="lightblue") %>%
+   add_header_above(c(" " = 1, "SALES VOLUME" = 6, "CAPITALIZATION RATES" = 6, "Market Pricing" = 3)) %>%
+   footnote(symbol = "Data Source: Real Capital Analytics",
+            number = c("SV: Sales Volume", "CR: Capitalization Rates", "MRQ: Most Recent Quarter", "NaN: Data not available"))
+
+
+# This is the code for compiling the vectors for Avg values for Large/Medium/Small IC markets. markets_size is a vector that is included in AVG_ic_markets_1 (our final vector for this table) but acts as row names for our data. Compared to the above table, this table misses one column, the "Date of Market Peak" column
+
+# Note 9 
+
+markets_size <- c("IC L", "IC M", "IC S") # Names for rows for table of L-M-S markets, feel free to modify them if you want
+
+AVG_ic_markets_1 <- data.frame(markets_size, currency(AVG_svol_mrq), percent(AVG_yoy_percent_mrq_svol), currency(AVG_mrq_less_1), percent(AVG_one_year_growth_svol), percent(AVG_three_year_cagr_svol), percent(AVG_five_year_cagr_svol), percent(AVG_cr_avg_mrq), percent(AVG_yoy_percent_mrq_cr), percent(AVG_cr_avg_mrq_less_1), percent(AVG_one_year_growth_cr), percent(AVG_three_year_cagr_cr), percent(AVG_five_year_cagr_cr), currency(AVG_psf_mrq),currency(AVG_peak_psf))
+
+colnames(AVG_ic_markets_1) <- c("Markets", "18Q2 MRQ (Ms) SV", "18Q2 as a % of 17Q2 SV", "17Q2 (Ms) SV", "1 Year Growth SV", "3 Year CAGR SV", "5 Year CAGR SV", "18Q2 MRQ CR", "18Q2 as a % of 17Q2 CR", "17Q2 CR", "1 year Growth CR", "3 Year CAGR CR", "5 year CAGR CR", "MRQ Pricing","Peak Pricing/sf") #Note8
+
+# Code for constructing/formatting the second table for the L-M-S markets. Feel free to modify the footnote comments, the colors in color_tile() functions, and even the titles using the caption = ... inside kable() function.
+
+
+AVG_ic_markets_1 %>%
+  select("Markets", everything()) %>%
+  kable("html", escape=F, caption="IC Markets- Office Capital Markets classified by Large (L)-Medium (M)-Small (S)") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))  %>%
+   kable_styling("hover", full_width = F) %>%
+   column_spec(8, width = "3cm") %>%
+   column_spec(1, bold = T, border_right = T, color="white", background="grey") %>%
+   column_spec(7, border_right = T) %>%
+   column_spec(13, border_right = T) %>%
+   row_spec(0, color="black", background="lightblue") %>%
+   add_header_above(c(" " = 1, "SALES VOLUME" = 6, "CAPITALIZATION RATES" = 6, "Market Pricing" = 2)) %>%
+   footnote(general = "Data Source: Real Capital Analytics",
+            symbol = c("Large Markets:NYC, DC, Boston, LA, Seattle, SF, SJ", " Medium Markets: Houston, Dallas, Denver, SD, Atlanta", "Small Markets: Austin, Portland, R/D, Nashville, SLC, Pittsburgh"), 
+            number = c("SV: Sales Volume", "CR: Capitalization Rates", "MRQ: Most Recent Quarter"))
+
+```
