@@ -1,0 +1,634 @@
+---
+title: "Non-IC Markets- Office Fundamentals"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: embed
+---
+    
+```{r, echo=FALSE, include=FALSE}
+
+# CHUNK 1
+
+# Loading formattable to access the percent() function used in the matrix below 
+library(formattable)
+# Loading ggplot2 in case data visualization output would be needed in the future
+library(ggplot2)
+# Loading dplyr into workspace
+library(dplyr)
+#Loading DataTables library
+library(DT)
+#Loading library readr
+library(readr)
+#Loading library knitr
+library(knitr)
+#Loading library knitr
+library(kableExtra)
+#library magick
+library(magick)
+#Loading library flexdashboard 
+library(flexdashboard)
+
+nic_cbre_office_fundamentals <- read_csv("C:/Users/vsoopr1/Desktop/R Projects/dashboard/NICs/CBRE Office Fundamentals/nic_cbre_office_fundamentals.csv", na = "NA")
+NIC_CBRE_NEW_SUPPLY_FORWARD <- read_csv("C:/Users/vsoopr1/Desktop/R Projects/dashboard/NICs/CBRE Office Fundamentals/NIC_CBRE_NEW_SUPPLY_FORWARD.csv", col_names = FALSE)
+
+df <- data.frame(nic_cbre_office_fundamentals, na.rm=TRUE)
+nic_supply_forward <- data.frame(NIC_CBRE_NEW_SUPPLY_FORWARD)
+
+```
+
+Dashboard
+=====================================
+
+### NON-IC Cities Office Fundamentals {data-width=650} 
+
+```{r, echo=FALSE, include=FALSE}
+
+# CHUNK 2
+
+# Code to compute Inventory 
+
+p <- nrow(df)
+
+nic_inv <- c(numeric(26))
+
+nic_inventory_strip <- function(m) {
+      nic_inv <- c(df$balt.nra[m], df$char.nra[m], df$chic.nra[m], df$cin.nra[m], df$clev.nra[m], df$col.nra[m], df$det.nra[m], df$ind.nra[m], df$jack.nra[m], df$kan.nra[m], df$lv.nra[m], df$miami.nra[m], df$minn.nra[m], df$okl.nra[m], df$orange.nra[m], df$orl.nra[m], df$phil.nra[m], df$phoe.nra[m], df$rich.nra[m], df$riv.nra[m], df$sacra.nra[m], df$santonio.nra[m], df$stls.nra[m], df$stam.nra[m], df$tampa.nra[m], df$palm.nra[m])
+      
+      return (nic_inv)
+  } 
+
+nic_inventory <- nic_inventory_strip(p)
+
+
+```
+
+```{r, echo=FALSE, include=FALSE}
+
+# CHUNK 3
+
+# Code to compute Occupancy columns
+
+nic_occ <- c(numeric (26))
+
+nic_occupancy_strip <- function(m, n) {
+      nic_occ <- (c(100-mean(df$balt.vac[m:n], na.rm=TRUE), 100 - mean(df$char.vac[m:n], na.rm=TRUE), 100 - mean(df$chic.vac[m:n], na.rm=TRUE), 100 - mean(df$cin.vac[m:n], na.rm=TRUE), 100 - mean(df$clev.vac[m:n], na.rm=TRUE), 100 - mean(df$col.vac[m:n], na.rm=TRUE), 100 - mean(df$det.vac[m:n], na.rm=TRUE), 100 - mean(df$ind.vac[m:n], na.rm=TRUE), 100 - mean(df$jack.vac[m:n], na.rm=TRUE), 100 - mean(df$kan.vac[m:n], na.rm=TRUE), 100 - mean(df$lv.vac[m:n], na.rm=TRUE), 100 - mean(df$miami.vac[m:n], na.rm=TRUE), 100 - mean(df$minn.vac[m:n], na.rm=TRUE), 100 - mean(df$okl.vac[m:n], na.rm=TRUE), 100 - mean(df$orange.vac[m:n], na.rm=TRUE), 100 - mean(df$orl.vac[m:n], na.rm=TRUE), 100 - mean(df$phil.vac[m:n], na.rm=TRUE), 100 - mean(df$phoe.vac[m:n], na.rm=TRUE), 100 - mean(df$rich.vac[m:n], na.rm=TRUE), 100 - mean(df$riv.vac[m:n], na.rm=TRUE), 100 - mean(df$sacra.vac[m:n], na.rm=TRUE), 100 - mean(df$santonio.vac[m:n], na.rm=TRUE), 100 - mean(df$stls.vac[m:n], na.rm=TRUE), 100 - mean(df$stam.vac[m:n], na.rm=TRUE), 100 - mean(df$tampa.vac[m:n], na.rm=TRUE), 100 - mean(df$palm.vac[m:n], na.rm=TRUE))) / 100
+      return (nic_occ)
+}
+
+nic_mrq_occ <- nic_occupancy_strip(p, p)
+nic_mrq_less_one_occ <- nic_occupancy_strip(p-4, p-4)
+nic_yoy_occ_growth_mrq <- (nic_mrq_occ - nic_mrq_less_one_occ) / nic_mrq_less_one_occ
+
+nic_five_year_avg_occ <- nic_occupancy_strip(p-20, p)
+nic_fifteen_year_avg_occupancy <- nic_occupancy_strip(p-60, p)
+
+```
+
+
+
+```{r, include=FALSE, echo=FALSE}
+# CHUNK 4
+
+# Code to compute supply columns data
+
+nic_supply <- c(numeric(26))
+
+nic_supply_strip <- function(m, n) {
+      nic_supply <- (c(sum(df$balt.comp[m:n], na.rm=TRUE), sum(df$char.comp[m:n], na.rm=TRUE), sum(df$chic.comp[m:n], na.rm=TRUE), sum(df$cin.comp[m:n], na.rm=TRUE), sum(df$clev.comp[m:n], na.rm=TRUE), sum(df$col.comp[m:n], na.rm=TRUE), sum(df$det.comp[m:n], na.rm=TRUE), sum(df$ind.comp[m:n], na.rm=TRUE), sum(df$jack.comp[m:n], na.rm=TRUE), sum(df$kan.comp[m:n], na.rm=TRUE), sum(df$lv.comp[m:n], na.rm=TRUE), sum(df$miami.comp[m:n], na.rm=TRUE), sum(df$minn.comp[m:n], na.rm=TRUE), sum(df$okl.comp[m:n], na.rm=TRUE), sum(df$orange.comp[m:n], na.rm=TRUE), sum(df$orl.comp[m:n], na.rm=TRUE), sum(df$phil.comp[m:n], na.rm=TRUE), sum(df$phoe.comp[m:n], na.rm=TRUE), sum(df$rich.comp[m:n], na.rm=TRUE), sum(df$riv.comp[m:n], na.rm=TRUE), sum(df$sacra.comp[m:n], na.rm=TRUE), sum(df$santonio.comp[m:n], na.rm=TRUE), sum(df$stls.comp[m:n], na.rm=TRUE), sum(df$stam.comp[m:n], na.rm=TRUE), sum(df$tampa.comp[m:n], na.rm=TRUE), sum(df$palm.comp[m:n], na.rm=TRUE)))
+      return (nic_supply)
+  }
+
+nic_new_supply_last_2_years <- nic_supply_strip(p-8, p)
+nic_new_supply_hist_as_percentage_total <- nic_new_supply_last_2_years / nic_inventory
+
+
+nic_new_supply_2_years_forward <- nic_supply_forward[, 2]
+nic_new_supply_forward_as_percentage_total <- nic_new_supply_2_years_forward / nic_inventory
+
+```
+
+
+```{r, echo=FALSE, include=FALSE}
+# CHUNK 5
+
+# Code to compute rent columns (1)
+
+m <- nrow(df)
+
+nic_rent_current_qtr <- c(numeric(26))
+nic_rent_gross_or_net <- rep(NA, 26)
+
+
+if (df$balt.x[m] > df$balt.y[m]) {
+      nic_rent_current_qtr[1] <- df$balt.gross[m]
+      nic_rent_gross_or_net[1] = "Gross" 
+    } else {
+      nic_rent_current_qtr[1] <- df$balt.net[m]
+      nic_rent_gross_or_net[1] = "Net"
+    }
+
+if (df$char.x[m] > df$char.y[m]) {
+      nic_rent_current_qtr[2] <- df$char.gross[m]
+      nic_rent_gross_or_net[2] = "Gross" 
+    } else {
+      nic_rent_current_qtr[2] <- df$char.net[m]
+      nic_rent_gross_or_net[2] = "Net"
+    }
+
+if (df$chic.x[m] > df$chic.y[m]) {
+      nic_rent_current_qtr[3] <- df$chic.gross[m]
+      nic_rent_gross_or_net[3] = "Gross" 
+    } else {
+      nic_rent_current_qtr[3] <- df$chic.net[m]
+      nic_rent_gross_or_net[3] = "Net"
+    }
+
+if (df$cin.x[m] > df$cin.y[m]) {
+      nic_rent_current_qtr[4] <- df$cin.gross[m]
+      nic_rent_gross_or_net[4] = "Gross" 
+    } else {
+      nic_rent_current_qtr[4] <- df$cin.net[m]
+      nic_rent_gross_or_net[4] = "Net"
+    }
+
+if (df$clev.x[m] > df$clev.y[m]) {
+      nic_rent_current_qtr[5] <- df$clev.gross[m]
+      nic_rent_gross_or_net[5] = "Gross" 
+    } else {
+      nic_rent_current_qtr[5] <- df$clev.net[m]
+      nic_rent_gross_or_net[5] = "Net"
+    }
+
+if (df$col.x[m] > df$col.y[m]) {
+      nic_rent_current_qtr[6] <- df$col.gross[m]
+      nic_rent_gross_or_net[6] = "Gross" 
+    } else {
+      nic_rent_current_qtr[6] <- df$col.net[m]
+      nic_rent_gross_or_net[6] = "Net"
+    }
+
+if (df$det.x[m] > df$det.y[m]) {
+      nic_rent_current_qtr[7] <- df$det.gross[m]
+      nic_rent_gross_or_net[7] = "Gross" 
+    } else {
+      nic_rent_current_qtr[7] <- df$det.net[m]
+      nic_rent_gross_or_net[7] = "Net"
+    }
+
+if (df$ind.x[m] > df$ind.y[m]) {
+      nic_rent_current_qtr[8] <- df$ind.gross[m]
+      nic_rent_gross_or_net[8] = "Gross" 
+    } else {
+      nic_rent_current_qtr[8] <- df$ind.net[m]
+      nic_rent_gross_or_net[8] = "Net"
+    }
+
+if (df$jack.x[m] > df$jack.y[m]) {
+      nic_rent_current_qtr[9] <- df$jack.gross[m]
+      nic_rent_gross_or_net[9] = "Gross" 
+    } else {
+      nic_rent_current_qtr[9] <- df$jack.net[m]
+      nic_rent_gross_or_net[9] = "Net"
+    }
+
+if (df$kan.x[m] > df$kan.y[m]) {
+      nic_rent_current_qtr[10] <- df$kan.gross[m]
+      nic_rent_gross_or_net[10] = "Gross" 
+    } else {
+      nic_rent_current_qtr[10] <- df$kan.net[m]
+      nic_rent_gross_or_net[10] = "Net"
+    }
+
+if (df$lv.x[m] > df$lv.y[m]) {
+      nic_rent_current_qtr[11] <- df$lv.gross[m]
+      nic_rent_gross_or_net[11] = "Gross" 
+    } else {
+      nic_rent_current_qtr[11] <- df$lv.net[m]
+      nic_rent_gross_or_net[11] = "Net"
+    }
+
+if (df$miami.x[m] > df$miami.y[m]) {
+      nic_rent_current_qtr[12] <- df$miami.gross[m]
+      nic_rent_gross_or_net[12] = "Gross" 
+    } else {
+      nic_rent_current_qtr[12] <- df$miami.net[m]
+      nic_rent_gross_or_net[12] = "Net"
+    }
+
+if (df$minn.x[m] > df$minn.y[m]) {
+      nic_rent_current_qtr[13] <- df$minn.gross[m]
+      nic_rent_gross_or_net[13] = "Gross" 
+    } else {
+      nic_rent_current_qtr[13] <- df$minn.net[m]
+      nic_rent_gross_or_net[13] = "Net"
+    }
+
+if (df$okl.x[m] > df$okl.y[m]) {
+      nic_rent_current_qtr[14] <- df$okl.gross[m]
+      nic_rent_gross_or_net[14] = "Gross" 
+    } else {
+      nic_rent_current_qtr[14] <- df$okl.net[m]
+      nic_rent_gross_or_net[14] = "Net"
+    }
+
+if (df$orange.x[m] > df$orange.y[m]) {
+      nic_rent_current_qtr[15] <- df$orange.gross[m]
+      nic_rent_gross_or_net[15] = "Gross" 
+    } else {
+      nic_rent_current_qtr[15] <- df$orange.net[m]
+      nic_rent_gross_or_net[15] = "Net"
+    }
+
+if (df$orl.x[m] > df$orl.y[m]) {
+      nic_rent_current_qtr[16] <- df$orl.gross[m]
+      nic_rent_gross_or_net[16] = "Gross" 
+    } else {
+      nic_rent_current_qtr[16] <- df$orl.net[m]
+      nic_rent_gross_or_net[16] = "Net"
+    }
+
+if (df$phil.x[m] > df$phil.y[m]) {
+      nic_rent_current_qtr[17] <- df$phil.gross[m]
+      nic_rent_gross_or_net[17] = "Gross" 
+    } else {
+      nic_rent_current_qtr[17] <- df$phil.net[m]
+      nic_rent_gross_or_net[17] = "Net"
+    }
+
+if (df$phoe.x[m] > df$phoe.y[m]) {
+      nic_rent_current_qtr[18] <- df$phoe.gross[m]
+      nic_rent_gross_or_net[18] = "Gross" 
+    } else {
+      nic_rent_current_qtr[18] <- df$phoe.net[m]
+      nic_rent_gross_or_net[18] = "Net"
+    }
+
+if (df$rich.x[m] > df$rich.y[m]) {
+      nic_rent_current_qtr[19] <- df$rich.gross[m]
+      nic_rent_gross_or_net[19] = "Gross" 
+    } else {
+      nic_rent_current_qtr[19] <- df$rich.net[m]
+      nic_rent_gross_or_net[19] = "Net"
+    }
+
+if (df$riv.x[m] > df$riv.y[m]) {
+      nic_rent_current_qtr[20] <- df$riv.gross[m]
+      nic_rent_gross_or_net[20] = "Gross" 
+    } else {
+      nic_rent_current_qtr[20] <- df$riv.net[m]
+      nic_rent_gross_or_net[20] = "Net"
+    }
+
+if (df$sacra.x[m] > df$sacra.y[m]) {
+      nic_rent_current_qtr[21] <- df$sacra.gross[m]
+      nic_rent_gross_or_net[21] = "Gross" 
+    } else {
+      nic_rent_current_qtr[21] <- df$sacra.net[m]
+      nic_rent_gross_or_net[21] = "Net"
+    }
+
+if (df$santonio.x[m] > df$santonio.y[m]) {
+      nic_rent_current_qtr[22] <- df$santonio.gross[m]
+      nic_rent_gross_or_net[22] = "Gross" 
+    } else {
+      nic_rent_current_qtr[22] <- df$santonio.net[m]
+      nic_rent_gross_or_net[22] = "Net"
+    }
+
+if (df$stls.x[m] > df$stls.y[m]) {
+      nic_rent_current_qtr[23] <- df$stls.gross[m]
+      nic_rent_gross_or_net[23] = "Gross" 
+    } else {
+      nic_rent_current_qtr[23] <- df$stls.net[m]
+      nic_rent_gross_or_net[23] = "Net"
+    }
+
+if (df$stam.x[m] > df$stam.y[m]) {
+      nic_rent_current_qtr[24] <- df$stam.gross[m]
+      nic_rent_gross_or_net[24] = "Gross" 
+    } else {
+      nic_rent_current_qtr[24] <- df$stam.net[m]
+      nic_rent_gross_or_net[24] = "Net"
+    }
+
+if (df$tampa.x[m] > df$tampa.y[m]) {
+      nic_rent_current_qtr[25] <- df$tampa.gross[m]
+      nic_rent_gross_or_net[25] = "Gross" 
+    } else {
+      nic_rent_current_qtr[25] <- df$tampa.net[m]
+      nic_rent_gross_or_net[25] = "Net"
+    }
+
+if (df$palm.x[m] > df$palm.y[m]) {
+      nic_rent_current_qtr[26] <- df$palm.gross[m]
+      nic_rent_gross_or_net[26] = "Gross" 
+    } else {
+      nic_rent_current_qtr[26] <- df$palm.net[m]
+      nic_rent_gross_or_net[26] = "Net"
+    }
+
+
+
+```
+
+
+```{r, echo=FALSE, include=FALSE}
+
+# CHUNK 6
+
+# Code for rents columns (2)
+
+rent <- c(numeric(26))
+
+nic_rent_hist_strip <- function(q) {
+    
+    if (df$balt.x[q] > df$balt.y[q]) {
+      rent[1] <- df$balt.gross[q]
+    } else {
+      rent[1] <- df$balt.net[q]
+      }
+
+    if (df$char.x[q] > df$char.y[q]) {
+      rent[2] <- df$char.gross[q]
+    } else {
+      rent[2] <- df$char.net[q]
+      }
+   
+    if (df$chic.x[q] > df$chic.y[q]) {
+      rent[3] <- df$chic.gross[q]
+    } else {
+      rent[3] <- df$chic.net[q]
+    }
+  
+    if (df$cin.x[q] > df$cin.y[q]) {
+      rent[4] <- df$cin.gross[q]
+    } else {
+      rent[4] <- df$cin.net[q]
+    }
+  
+    if (df$clev.x[q] > df$clev.y[q]) {
+      rent[5] <- df$clev.gross[q]
+    } else {
+      rent[5] <- df$clev.net[q]
+    }
+  
+    if (df$col.x[q] > df$col.y[q]) {
+      rent[6] <- df$col.gross[q]
+    } else {
+      rent[6] <- df$col.net[q]
+    }
+  
+    if (df$det.x[q] > df$det.y[q]) {
+      rent[7] <- df$det.gross[q]
+    } else {
+      rent[7] <- df$det.net[q]
+    }
+  
+    if (df$ind.x[q] > df$ind.y[q]) {
+      rent[8] <- df$ind.gross[q]
+    } else {
+      rent[8] <- df$ind.net[q]
+    }
+  
+    if (df$jack.x[q] > df$jack.y[q]) {
+      rent[9] <- df$jack.gross[q]
+    } else {
+      rent[9] <- df$jack.net[q]
+    }
+  
+    if (df$kan.x[q] > df$kan.y[q]) {
+      rent[10] <- df$kan.gross[q]
+    } else {
+      rent[10] <- df$kan.net[q]
+    }
+  
+    if (df$lv.x[q] > df$lv.y[q]) {
+      rent[11] <- df$lv.gross[q]
+    } else {
+      rent[11] <- df$lv.net[q]
+      }
+  
+    if (df$miami.x[q] > df$miami.y[q]) {
+      rent[12] <- df$miami.gross[q]
+    } else {
+      rent[12] <- df$miami.net[q]
+    }
+  
+    if (df$minn.x[q] > df$minn.y[q]) {
+      rent[13] <- df$minn.gross[q]
+    } else {
+      rent[13] <- df$minn.net[q]
+    }
+  
+    if (df$okl.x[q] > df$okl.y[q]) {
+      rent[14] <- df$okl.gross[q]
+    } else {
+      rent[14] <- df$okl.net[q]
+    }
+  
+    if (df$orange.x[q] > df$orange.y[q]) {
+      rent[15] <- df$orange.gross[q]
+    } else {
+      rent[15] <- df$orange.net[q]
+    }
+  
+    if (df$orl.x[q] > df$orl.y[q]) {
+      rent[16] <- df$orl.gross[q]
+    } else {
+      rent[16] <- df$orl.net[q]
+    }
+  
+    if (df$phil.x[q] > df$phil.y[q]) {
+      rent[17] <- df$phil.gross[q]
+    } else {
+      rent[17] <- df$phil.net[q]
+    }
+  
+    if (df$phoe.x[q] > df$phoe.y[q]) {
+      rent[18] <- df$phoe.gross[q]
+    } else {
+      rent[18] <- df$phoe.net[q]
+    }
+  
+    if (df$rich.x[q] > df$rich.y[q]) {
+      rent[19] <- df$rich.gross[q]
+    } else {
+      rent[19] <- df$rich.net[q]
+    }
+  
+    if (df$riv.x[q] > df$riv.y[q]) {
+      rent[20] <- df$riv.gross[q]
+    } else {
+      rent[20] <- df$riv.net[q]
+    }
+  
+    if (df$sacra.x[q] > df$sacra.y[q]) {
+      rent[21] <- df$sacra.gross[q]
+    } else {
+      rent[21] <- df$sacra.net[q]
+    }
+  
+    if (df$santonio.x[q] > df$santonio.y[q]) {
+      rent[22] <- df$santonio.gross[q]
+    } else {
+      rent[22] <- df$santonio.net[q]
+    }
+  
+    if (df$stls.x[q] > df$stls.y[q]) {
+      rent[23] <- df$stls.gross[q]
+    } else {
+      rent[23] <- df$stls.net[q]
+    }
+  
+    if (df$stam.x[q] > df$stam.y[q]) {
+      rent[24] <- df$stam.gross[q]
+    } else {
+      rent[24] <- df$stam.net[q]
+    }
+  
+    if (df$tampa.x[q] > df$tampa.y[q]) {
+      rent[25] <- df$tampa.gross[q]
+    } else {
+      rent[25] <- df$tampa.net[q]
+    }
+  
+    if (df$palm.x[q] > df$palm.y[q]) {
+      rent[26] <- df$palm.gross[q]
+    } else {
+      rent[26] <- df$palm.net[q]
+      }
+  return (rent)
+}
+
+nic_rent_x <- nic_rent_hist_strip(p)
+nic_rent_x_1 <- nic_rent_hist_strip(p-4)
+nic_rent_x_2 <- nic_rent_hist_strip(p-8)
+nic_rent_x_3 <- nic_rent_hist_strip(p-12)
+
+nic_rent_growth_2017 <- (nic_rent_x_1 - nic_rent_x_2) / nic_rent_x_2
+nic_rent_growth_2016 <- (nic_rent_x_2 - nic_rent_x_3) / nic_rent_x_3
+nic_rent_growth_ytd <- (nic_rent_x - nic_rent_x_1) / nic_rent_x_1
+
+
+```
+
+
+```{r, echo=FALSE}
+# CHUNK 7
+
+library(formattable)
+
+nic_markets <- c("Baltimore", "Charlotte", "Chicago", "Cincinatti", "Cleveland", "Columbus", "Detroit", "Indianapolis", "Jacksonville", "Kansas City", "Las Vegas", "Miami", "Minneapolis", "Oklahoma City", "Orange County", "Orlando", "Philadelphia", "Phoenix", "Richmond", "Riverside", "Sacramento", "San Antonio", "St. Louis", "Stamford", "Tampa", "West Palm Beach")
+
+nic_office_fundamentals <- data.frame(nic_markets, accounting(nic_inventory, digits=0), percent(nic_mrq_occ), percent(nic_yoy_occ_growth_mrq), percent(nic_mrq_less_one_occ), percent(nic_five_year_avg_occ), percent(nic_fifteen_year_avg_occupancy), accounting(nic_new_supply_last_2_years, digits=0), percent(nic_new_supply_hist_as_percentage_total), accounting(nic_new_supply_2_years_forward, digits=0), percent(nic_new_supply_forward_as_percentage_total), nic_rent_gross_or_net, currency(nic_rent_current_qtr), percent(nic_rent_growth_2016), percent(nic_rent_growth_2017), percent(nic_rent_growth_ytd))
+
+colnames(nic_office_fundamentals) <- c("Markets", "Inventory", "MRQ (18Q2) %", "Occ. Growth MRQ from 17Q2", "17Q2 %", "5 Yr Avg %", "15 Yr Avg %", "Last 2 Years", "Last 2 Years as % of Inventory", "Supply 2 Years Forward", "Supply 2 Yrs Forward as % of Inventory", "Gross or Net", "MRQ (18Q2)", "Rent Growth 16Q2 from 15Q2", "Rent Growth 17Q2 from 16Q2", "Rent Growth 18Q2 from 17Q2") # Note 7
+
+# Code for constructing/formatting the table. Feel free to modify the footnote comments, the colors in color_tile() functions, and even the titles using the caption = ... inside kable() function.
+
+library(formattable)
+
+nic_office_fundamentals %>%
+  mutate(
+    "Rent Growth 18Q2 from 17Q2" = formatter(
+    "span",
+    style = x ~ style(color=ifelse(x<0, "red", "green")),
+    x ~ icontext(ifelse(x<0, "arrow-down", "arrow-up"), x))(percent(nic_rent_growth_ytd)),
+    
+    "Rent Growth 17Q2 from 16Q2" = formatter(
+    "span",
+    style = x ~ style(color=ifelse(x<0, "red", "green")),
+    x ~ icontext(ifelse(x<0, "arrow-down", "arrow-up"), x))(percent(nic_rent_growth_2017)),
+    
+    "Rent Growth 16Q2 from 15Q2" = formatter(
+    "span",
+    style = x ~ style(color=ifelse(x<0, "red", "green")),
+    x ~ icontext(ifelse(x<0, "arrow-down", "arrow-up"), x))(percent(nic_rent_growth_2016)),
+    
+    "Occ. Growth MRQ from 17Q2" = formatter(
+    "span",
+    style = x ~ style(color=ifelse(x<0, "red", "green")),
+    x ~ icontext(ifelse(x<0, "arrow-down", "arrow-up"), x))(percent(nic_yoy_occ_growth_mrq)),
+    
+    "MRQ (18Q2) %" = color_tile("white", "lightgreen")(percent(nic_mrq_occ)),
+    
+    "5 Yr Avg %" = color_tile("white", "orange")(percent(nic_five_year_avg_occ)),
+    
+    "15 Yr Avg %" = color_tile("white", "orange")(percent(nic_fifteen_year_avg_occupancy)),
+    
+    "Last 2 Years as % of Inventory" = color_tile("white", "lightblue")(percent(nic_new_supply_hist_as_percentage_total)),
+    
+    "Supply 2 Yrs Forward as % of Inventory" = color_tile("white", "lightblue")(percent(nic_new_supply_forward_as_percentage_total))
+) %>%
+  select("Markets", everything()) %>%
+  kable("html", escape=F, caption="Non-IC Markets- Office Fundamentals") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover"))  %>%
+   kable_styling("hover", full_width = F) %>%
+   column_spec(7, border_right = T) %>%
+   column_spec(11, border_right = T) %>%
+   column_spec(2, border_right = T) %>%
+   column_spec(1, bold = T, border_right = T, color="white", background="grey") %>%
+   row_spec(0, color="black", background="yellow") %>%
+   add_header_above(c(" " = 1, "INVENTORY" = 1, "OCCUPANCY" = 5, "SUPPLY" = 4, "RENT" = 5)) %>%
+   footnote(symbol = "Data Source: CBRE- EA") 
+```
+
+
+DOWNLOADABLE DATA
+=====================================
+
+Column {data-width=600}
+-------------------------------------
+
+### DOWNLOADABLE DATA 
+
+```{r}
+datatable(
+  nic_office_fundamentals, extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+
+```
+
+
+Codebook
+=====================================
+
+### Formulas to derive the results {data-width=600}
+
+$\text {Data for all the columns are from CBRE-EA}$  
+
+`Inventory` = $\text {Inventory of Properties (Office Spaces) as of MRQ}$  
+
+`MRQ (18Q1) %` = $\text {Occupancy % as of MRQ}$  
+
+`YOY MRQ Growth` = $\frac {\text {Occupancy of 18Qx - Occupancy of 17Qx}}{\text {Occupancy of 17Qx}}$ x 100  
+
+`17Qx %` = $\text {Occupancy for (MRQ-4) %}$  
+
+`5 Yr Avg %` = $$100 - \frac {1}{20} \sum_{i=1}^{20} {Vacancy_{i}}$$  $\text {Data obtained from CBRE is quarterly, hence for 5 years, we have 20 quarters}$       
+
+`15 Yr Avg %` = $$100 - \frac {1}{60} \sum_{i=1}^{60} {Vacancy_{i}}$$  $\text {Data obtained from CBRE is quarterly, hence for 15 years, we have 60 quarters}$      
+
+`Last 2 Years` = $\text {New Supply/Completions over the last 2 years}$  
+
+`Last 2 Years as % of Inventory` = $\frac {\text {New supply/Completions over last 2 years}}{\text {Total Inventory of office properties}}$ x 100  
+
+`Supply 2 Years forward` = $\text {Projected supply for the next 2 years}$  
+
+`Supply 2 Years Forward as % of Inventory` = $\frac {\text {Projected New supply 2 Years forward}}{\text {Total Inventory of office properties}}$ x 100  
+
+`Gross or Net` = $\text {Indicates which of Gross or Net Rent has been used, whichever is the higher}$  
+
+`MRQ (18Q1)` = $\text {Rent as of MRQ}$  
+
+`Rent Growth 16Qx from 15Qx` = $\frac {\text {Net/Gross Asking Rent (MRQ - 8) - Net/Gross Asking Rent (MRQ - 12)}}{\text {Net/Gross Asking Rent (MRQ - 12)}}$ x 100  
+
+`Rent Growth 2017 from 2016` = $\frac {\text {Net/Gross Asking Rent (MRQ - 4) - Net/Gross Asking Rent (MRQ - 8)}}{\text {Net/Gross Asking Rent (MRQ - 8)}}$ x 100  
+
+`Rent Growth MRQ from 2017` = $\frac {\text {Net/Gross Asking Rent MRQ - Net/Gross Asking Rent (MRQ - 4)}}{\text {Net/Gross Asking Rent (MRQ - 4)}}$ x 100  
+
