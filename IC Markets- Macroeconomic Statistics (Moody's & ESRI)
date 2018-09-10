@@ -1,0 +1,215 @@
+---
+title: "IC Markets- Macroeconomic Statistics (Moody's & ESRI)"
+output:
+  flexdashboard::flex_dashboard:
+    social: menu
+    source_code: embed
+---
+
+
+
+```{r, echo=FALSE, include=FALSE}
+# CHUNK 1
+
+# Loading formattable to access the percent() function used in the matrix below 
+library(formattable)
+# Loading ggplot2 in case data visualization output would be needed in the future
+library(ggplot2)
+# Loading dplyr into workspace
+library(dplyr)
+#Loading DataTables library
+library(DT)
+#Loading library readr
+library(readr)
+#Loading library magick
+library(magick)
+#Loading library knitr
+library(knitr)
+#Loading library kable
+library(kableExtra)
+#Loading library flexdashboard 
+library(flexdashboard)
+
+total_jobs <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\Jobs_IC_cities\\toal_jobs_filtered.csv") # Note 1
+total_TEEM <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\Jobs_IC_cities\\TEEM_compiled.csv")  # Note 2
+popEduc <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\Jobs_IC_cities\\popEduc.csv")  # Note 3
+gmp_total <- read_csv("C:\\Users\\ccotsa1\\Documents\\Dashboards\\Jobs_IC_cities\\gmp_total.csv")  # Note 4
+
+total_jobs <- data.frame(total_jobs)
+total_TEEM <- data.frame(total_TEEM)
+total_popEduc <- data.frame(popEduc)
+total_gmp <- data.frame(gmp_total)
+
+```
+
+
+Dashboard
+=====================================
+
+### IC Cities MacroEconomic Stats {data-width=650}
+
+
+```{r, echo=FALSE, include=FALSE}
+# CHUNK 2
+
+# Getting population and college educated data
+
+pop <- total_popEduc[, 2]
+
+educ <- total_popEduc[, 3]
+
+# Calculating 5-year Job CAGR
+
+five_year_total_job_growth <- c(numeric(20))
+for (i in 1:20) {
+  five_year_total_job_growth[i] = ((total_jobs$x[i] / total_jobs$x.5[i])^(1/5)) - 1
+}
+
+# Calculating YOY Job Growth rate
+
+yoy_total_job_growth <- c(numeric(20))
+for (i in 1:20) {
+  yoy_total_job_growth[i] <- (total_jobs$x[i] - total_jobs$x.1[i]) / total_jobs$x.1[i]
+}
+
+# Calculating TEEM jobs as a % of total jobs
+
+TEEM_percentage_total <- c(numeric(20))
+for (i in 1:20) {
+  TEEM_percentage_total[i] <- (total_TEEM$x[i]/total_jobs$x[i])
+}
+
+# Calculating 5-year TEEM Job CAGR
+
+five_year_TEEM_growth <- c(numeric(20))
+for (i in 1:20) {
+  five_year_TEEM_growth[i] <- ((total_TEEM$x[i] / total_TEEM$x.5[i])^(1/5)) - 1
+}
+
+# Calculating YOY TEEM Job Growth
+yoy_TEEM_growth <- c(numeric(20))
+for (i in 1:20) {
+  yoy_TEEM_growth[i] <- (total_TEEM$x[i] - total_TEEM$x.1[i]) / total_TEEM$x.1[i]
+}
+
+# Calculating GMP/Emp
+
+gmp_by_emp <- c(numeric(20))
+for (i in 1:20) {
+  gmp_by_emp[i] <- total_gmp$x[i] / total_jobs$x[i]
+}
+
+# Calculating GMP growth
+
+gmp_growth <- c(numeric(20))
+for (i in 1:20) {
+  gmp_growth[i] <- ((total_gmp$x[i] / total_gmp$x.5[i])^(1/5)) - 1
+}
+
+# Converting total GMP in Billion figures
+
+total_gmp_1 <- total_gmp$x / 1000
+```
+
+
+
+```{r, echo=FALSE}
+
+# CHUNK 3
+
+library(formattable)
+
+markets_1 <- c("Boulder", "San Francisco", "Washington DC", "San Jose", "Boston", "Raleigh/Durham", "Austin", "Oakland", "Denver", "Seattle", "New York", "Portland", "Atlanta", "San Diego", "Dallas", "Nashville", "Pittsburgh", "Salt Lake City", "Houston", "Los Angeles")
+
+macro_econ_stats <- data.frame(markets_1, accounting(pop, digits = 0), percent(educ), accounting(total_jobs$x, digits=1), percent(five_year_total_job_growth), percent(yoy_total_job_growth), accounting(total_TEEM$x, digits=1), percent(TEEM_percentage_total) ,percent(five_year_TEEM_growth), percent(yoy_TEEM_growth), currency(total_gmp_1, digits=1), currency(gmp_by_emp, digits=1), percent(gmp_growth))
+
+colnames(macro_econ_stats) <- c("Markets", "Population", "% College Educated", "# Jobs ('000s) 2018", "5 Year CAGR", "1 Year Growth", "# TEEM Jobs ('000s) 2018", "TEEM Jobs as % of Total Jobs", "5 Year TEEM CAGR", "1 Year TEEM Growth", "GMP ($ Bn)", "GMP/Emp", "5 year GMP CAGR") # Note 5
+
+macro_econ_stats %>%
+  mutate(
+    "5 Year CAGR" = color_tile("white", "orange")(percent(five_year_total_job_growth)),
+    "1 Year Growth" = color_tile("white", "orange")(percent(yoy_total_job_growth)),
+    "TEEM Jobs as % of Total Jobs" = color_tile("white", "lightblue")(percent(TEEM_percentage_total)),
+    "5 Year TEEM CAGR" = color_tile("white", "lightgreen")(percent(five_year_TEEM_growth)),
+    "1 Year TEEM Growth" = color_tile("white", "lightgreen")(percent(yoy_TEEM_growth)),
+    "GMP/Emp" = color_tile("white", "yellow")(currency(gmp_by_emp, digits=1)),
+    "5 year GMP CAGR" = color_tile("white", "yellow")(percent(gmp_growth))
+    
+) %>%
+  select("Markets", everything()) %>%
+  kable("html", escape=F, caption="IC Markets- Macroeconomic Statistics") %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))  %>%
+   kable_styling("hover", full_width = F) %>%
+   column_spec(10, border_right = T) %>%
+   column_spec(2, border_right = T) %>%
+   column_spec(3, border_right = T) %>%
+   column_spec(1, bold = T, border_right = T, color="white", background="grey") %>%
+   row_spec(0, color="black", background="lightpink") %>%
+   add_header_above(c(" " = 1, "POPULATION" = 1, "EDUCATION"=1, "JOBS" = 7, "Gross Metro Product" = 3)) %>%
+   footnote(symbol = "Data Source: Moody's Analytics & ESRI")
+
+```
+
+
+
+DOWNLOADABLE DATA
+=====================================
+
+Column {data-width=600}
+-------------------------------------
+
+### DOWNLOADABLE DATA 
+
+```{r}
+datatable(
+  macro_econ_stats, extensions = 'Buttons', options = list(
+    dom = 'Bfrtip',
+    buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
+  )
+)
+
+```
+
+
+
+Codebook
+=====================================
+
+### Formulas to derive the results {data-width=600}  
+
+$\text {Data for Columns 'Population' and '% College Educated' are from ESRI}$  
+
+$\text {Data for all the other columns are from Moody's (economy.com)}$  
+
+`Population` = $\text {Population statistics as of MRQ}$  
+
+`% College Educated` = $\text {Percentage of population that is college educated, i.e. Bachlors and Masters Degrees inclusive}$  
+
+`# Jobs ('000s) 2018` = $\text {Total Number of Jobs in thousands as of MRY}$  
+
+`5 Year CAGR` = $(\frac {\text {Total Jobs as of 2018}}{\text {Total Jobs in 2013}})^ \frac {1}{5} - 1$  
+
+`1 Year Growth` = $\frac {\text {Total Jobs as of 2018 - Total Jobs in 2017}}{\text {Total Jobs in 2017}}$ x 100  
+
+`# TEEM Jobs ('000s) 2018` = $\text {Total Number of TEEM Jobs in thousands as of MRY}$  
+
+`TEEM Jobs as % of Total Jobs` = $\frac {\text {TEEM Jobs as of MRY}}{\text {Total Number of Jobs as of MRY}}$ x 100  
+
+`5 Year TEEM CAGR` = $(\frac {\text {TEEM Jobs as of 2018}}{\text {TEEM Jobs in 2013}})^ \frac {1}{5} - 1$  
+
+`1 Year TEEM Growth` = $\frac {\text {TEEM Jobs as of 2018 - TEEM Jobs in 2017}}{\text {Total Jobs in 2017}}$ x 100  
+
+`GMP ($ Bn)` = $\text {Gross Metro Product as of MRY in Billions dollars}$  
+
+`GMP/Emp` = $\frac {\text {GMP as of MRY}}{\text {Total Number of Jobs as of MRY}}$   
+
+`5 Year GMP CAGR` = $(\frac {\text {GMP as of 2018}}{\text {GMP in 2013}})^ \frac {1}{5} - 1$  
+
+
+
+
+
+
+
+
+
